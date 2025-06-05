@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - Task Management App</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
@@ -55,17 +59,17 @@
             <div class="filters">
                 <div class="filter-group">
                     <span class="filter-label">Priority:</span>
-                    <button class="filter-btn active" onclick="filterTasks('all', 'priority')">All</button>
-                    <button class="filter-btn" onclick="filterTasks('high', 'priority')">High</button>
-                    <button class="filter-btn" onclick="filterTasks('medium', 'priority')">Medium</button>
-                    <button class="filter-btn" onclick="filterTasks('low', 'priority')">Low</button>
+                    <button class="filter-btn active" data-filter="all" onclick="filterTasks('all', 'priority')">All</button>
+                    <button class="filter-btn" data-filter="high" onclick="filterTasks('high', 'priority')">High</button>
+                    <button class="filter-btn" data-filter="medium" onclick="filterTasks('medium', 'priority')">Medium</button>
+                    <button class="filter-btn" data-filter="low" onclick="filterTasks('low', 'priority')">Low</button>
                 </div>
                 <div class="filter-group">
                     <span class="filter-label">Status:</span>
-                    <button class="filter-btn status-btn active" onclick="filterTasks('all', 'status')">All</button>
-                    <button class="filter-btn status-btn" onclick="filterTasks('todo', 'status')">To Do</button>
-                    <button class="filter-btn status-btn" onclick="filterTasks('progress', 'status')">In Progress</button>
-                    <button class="filter-btn status-btn" onclick="filterTasks('done', 'status')">Completed</button>
+                    <button class="filter-btn status-btn active" data-filter="all" onclick="filterTasks('all', 'status')">All</button>
+                    <button class="filter-btn status-btn" data-filter="todo" onclick="filterTasks('todo', 'status')">To Do</button>
+                    <button class="filter-btn status-btn" data-filter="progress" onclick="filterTasks('progress', 'status')">In Progress</button>
+                    <button class="filter-btn status-btn" data-filter="done" onclick="filterTasks('done', 'status')">Completed</button>
                 </div>
                 <button class="btn-secondary" onclick="clearAllTasks()">Clear All</button>
             </div>
@@ -158,5 +162,6 @@
             </div>
         </div>
     </div>
+    <script src="script.js"></script>
 </body>
 </html>

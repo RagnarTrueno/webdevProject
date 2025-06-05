@@ -268,3 +268,95 @@ function renderTasks() {
             document.getElementById('progressTasks').textContent = progress;
             document.getElementById('doneTasks').textContent = done;
         }
+
+// Save tasks to localStorage
+function saveTasks() {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+// Load tasks from localStorage
+function loadTasks() {
+    const savedTasks = localStorage.getItem('tasks');
+    if (savedTasks) {
+        tasks = JSON.parse(savedTasks);
+        tasks.forEach(task => {
+            task.createdAt = new Date(task.createdAt);
+            task.updatedAt = new Date(task.updatedAt);
+            if (task.dueDate) {
+                task.dueDate = new Date(task.dueDate);
+            }
+        });
+    }
+}
+
+// Promote task to next status
+function promoteTask(taskId) {
+    const task = tasks.find(t => t.id === parseFloat(taskId));
+    if (task) {
+        if (task.status === 'todo') {
+            task.status = 'progress';
+        } else if (task.status === 'progress') {
+            task.status = 'done';
+        }
+        task.updatedAt = new Date();
+        saveTasks();
+        renderTasks();
+        updateStats();
+    }
+}
+
+// Format date
+function formatDate(date) {
+    const d = new Date(date);
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    
+    if (d.toDateString() === now.toDateString()) return 'Today';
+    if (d.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
+    if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    
+    return d.toLocaleDateString();
+}
+
+// Check if task is overdue
+function isOverdue(task) {
+    return task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'done';
+}
+
+// Demote task to previous status
+function demoteTask(taskId) {
+    const task = tasks.find(t => t.id === parseFloat(taskId));
+    if (task) {
+        if (task.status === 'done') {
+            task.status = 'progress';
+        } else if (task.status === 'progress') {
+            task.status = 'todo';
+        }
+        task.updatedAt = new Date();
+        saveTasks();
+        renderTasks();
+        updateStats();
+    }
+}
+
+// Confirm delete
+function confirmDelete() {
+    const task = tasks.find(t => t.id === deletingTaskId);
+    if (task) {
+        tasks = tasks.filter(t => t.id !== deletingTaskId);
+        saveTasks();
+        renderTasks();
+        updateStats();
+    }
+    closeDeleteModal();
+}
+
+// Close delete modal
+function closeDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+    deletingTaskId = null;
+}
+
+// Initialize the app when the page loads
+document.addEventListener('DOMContentLoaded', init);
