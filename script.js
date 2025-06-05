@@ -1,59 +1,58 @@
 let tasks = [];
-let curentpriorityfilter = 'all';
-let curentstatusfilter = 'all';
-let editingtaskid = null;
-let deletetingtaskid = null;
+let currentPriorityFilter = 'all';
+let currentStatusFilter = 'all';
+let editingTaskId = null;
+let deletingTaskId = null;
 
 // INITIALIZE THE APP
-function Initialize(){
-    loadtask();
-    rendertasks();
-    updatetask();
+function init() {
+    loadTasks();
+    renderTasks();
+    updateStats();
 }
 
-class task{
-    constuctor(title, priortiy = 'medium', description ='', duedate=null){
-        this.id = Date,now + Math.random();
-        this.title = title; 
+class Task {
+    constructor(title, priority = 'medium', description = '', dueDate = null) {
+        this.id = Date.now() + Math.random();
+        this.title = title;
         this.description = description;
         this.priority = priority;
         this.status = 'todo';
-        this.createat = new Date();
-        this.updateat = new Date();
-        this.duedate = duedate;
-
+        this.createdAt = new Date();
+        this.updatedAt = new Date();
+        this.dueDate = dueDate;
     }
 }
 
-function addtask(){
-    const titleinput = document.getElementById('tasktittle');
-    const priorityselect = document.getElementById('taskPriority');
-    const taskduedate = document.getElementById('Taskduedate');
+function addTask() {
+    const titleInput = document.getElementById('taskTitle');
+    const prioritySelect = document.getElementById('taskPriority');
+    const dueDateInput = document.getElementById('taskDueDate');
 
-    const title = titleinput.value.trim();
-    const priortiy = priorityselect.value;
-    const duedate = duedateinput.value ? new Date(duedateinput.value) : null;
+    const title = titleInput.value.trim();
+    const priority = prioritySelect.value;
+    const dueDate = dueDateInput.value ? new Date(dueDateInput.value) : null;
 
-    if(title===null){
+    if (!title) {
         alert('Please enter a task title');
         return;
     }
 
-    const task = new task(title, priortiy, '', duedate);
-    task.push(task);
+    const newTask = new Task(title, priority, '', dueDate);
+    tasks.push(newTask);
 
     // CLEARING THE INPUTS BEING TYPED
-    titleinput.value = '';
-    priorityselect.value = 'medium';
-    duedateinput.value = '';
+    titleInput.value = '';
+    prioritySelect.value = 'medium';
+    dueDateInput.value = '';
 
-    savetasks();
-    rendertasks();
-    updatetasks();
+    saveTasks();
+    renderTasks();
+    updateStats();
 
     // ADDING ANIMATION
     setTimeout(() => {
-        const taskElement = document.querySelector(`[data-task-id="${task.id}"]`);
+        const taskElement = document.querySelector(`[data-task-id="${newTask.id}"]`);
         if (taskElement) {
             taskElement.style.transform = 'scale(1.05)';
             setTimeout(() => {
@@ -61,77 +60,97 @@ function addtask(){
             }, 200);
         }
     }, 100);
-
 }
 
 // DELETING TASK
-function deleteTask(taskid){
-    deletetaskid = taskid;
-    document.getElementById('deletemodal').style.display = 'block';
+function deleteTask(taskId) {
+    deletingTaskId = taskId;
+    document.getElementById('deleteModal').style.display = 'block';
 }
 
 // EDITING TASK
-function editTask(taskid){
-    const task = task.find(t=>t.id===taskid);
-    if(task===null) return;
+function editTask(taskId) {
+    const taskToEdit = tasks.find(t => t.id === taskId);
+    if (!taskToEdit) return;
 
-    const title = document.getElementById('edittasktitle').value.trim();
-    const description = document.getElementById('edittaskdescription').value.trim();
+    editingTaskId = taskId;
+    
+    // Populate the edit modal with task data
+    document.getElementById('editTaskTitle').value = taskToEdit.title;
+    document.getElementById('editTaskDescription').value = taskToEdit.description || '';
+    document.getElementById('editTaskPriority').value = taskToEdit.priority;
+    document.getElementById('editTaskDueDate').value = taskToEdit.dueDate ? taskToEdit.dueDate.toISOString().split('T')[0] : '';
+    
+    document.getElementById('editModal').style.display = 'block';
+}
+
+// SAVE EDITED TASK
+function saveEditedTask() {
+    const task = tasks.find(t => t.id === editingTaskId);
+    if (!task) return;
+
+    const title = document.getElementById('editTaskTitle').value.trim();
+    const description = document.getElementById('editTaskDescription').value.trim();
+    const priority = document.getElementById('editTaskPriority').value;
     const dueDateInput = document.getElementById('editTaskDueDate');
     const dueDate = dueDateInput.value ? new Date(dueDateInput.value) : null;
 
-    if(!tittle){
+    if (!title) {
         alert('Please enter a task title');
         return;
-    }else{
-        task.title = title;
-        task.description = description;
-        task.priority = priority;
-        task.duedate = dueDate;
-        task.updateat = new Date();
     }
-    closeeditmodal();
-    savetasks();
-    rendertasks();
-    updateStats();
 
+    task.title = title;
+    task.description = description;
+    task.priority = priority;
+    task.dueDate = dueDate;
+    task.updatedAt = new Date();
+
+    closeEditModal();
+    saveTasks();
+    renderTasks();
+    updateStats();
 }
 
 // CLOSE EDIT MODAL
-function closeeditmodal(){
-    document.getElementById('editmodal').style.display = 'none';
-    editingtaskid - null;
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+    editingTaskId = null;
 }
 
 // CHANGE TASK STATUS
-function changetaststatus(taskid, newstatus){
-    const task = task.find(t => t.id === taskid);
+function changeTaskStatus(taskId, newStatus) {
+    const task = tasks.find(t => t.id === taskId);
 
-    if(task){
-        task.status = newstatus;
-        task.updateat = new Date();
-        savetasks();
-        rendertasks();
+    if (task) {
+        task.status = newStatus;
+        task.updatedAt = new Date();
+        saveTasks();
+        renderTasks();
         updateStats();
     }
-
 }
 
 // FILTER TASKS
-function filtertasks(filter, type){
-    if(type==='priority'){
-        currentpriorityfilter = filter;
-        document.querySelectorAll('.filter-btn:not(.status-btn)').forEach(btn=>{
-            btn.classList.toggle('active', btn.textContent.toLowerCase().includes(filter.toLowerCase()));
+function filterTasks(filter, type) {
+    if (type === 'priority') {
+        currentPriorityFilter = filter;
+        document.querySelectorAll('.filter-btn:not(.status-btn)').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-filter') === filter) {
+                btn.classList.add('active');
+            }
         });
-    }else if (type==='status'){
-        currentstatusfilter = filter;
+    } else if (type === 'status') {
+        currentStatusFilter = filter;
         document.querySelectorAll('.status-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.textContent.toLowerCase().includes(filter.toLowerCase()));
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-filter') === filter) {
+                btn.classList.add('active');
+            }
         });
-
     }
-    rendertaskS();
+    renderTasks();
 }
 
 // CLEAR ALL TASKS
@@ -155,29 +174,29 @@ function renderTasks() {
     progressList.innerHTML = '';
     doneList.innerHTML = '';
             
-        // FILTER TASKS
-        let filteredTasks = tasks;
-        if (currentPriorityFilter !== 'all') {
-            filteredTasks = filteredTasks.filter(task => task.priority === currentPriorityFilter);
-        }
-        if (currentStatusFilter !== 'all') {
-            filteredTasks = filteredTasks.filter(task => task.status === currentStatusFilter);
-        }
+    // FILTER TASKS
+    let filteredTasks = tasks;
+    if (currentPriorityFilter !== 'all') {
+        filteredTasks = filteredTasks.filter(task => task.priority === currentPriorityFilter);
+    }
+    if (currentStatusFilter !== 'all') {
+        filteredTasks = filteredTasks.filter(task => task.status === currentStatusFilter);
+    }
             
-        // GROUPING THE TASK BY STATUS
-        const todoTasks = filteredTasks.filter(task => task.status === 'todo');
-        const progressTasks = filteredTasks.filter(task => task.status === 'progress');
-        const doneTasks = filteredTasks.filter(task => task.status === 'done');
+    // GROUPING THE TASK BY STATUS
+    const todoTasks = filteredTasks.filter(task => task.status === 'todo');
+    const progressTasks = filteredTasks.filter(task => task.status === 'progress');
+    const doneTasks = filteredTasks.filter(task => task.status === 'done');
             
-        // RENDERING TASK IN EACH COLUMN
-        renderTasksInColumn(todoTasks, todoList);
-        renderTasksInColumn(progressTasks, progressList);
-        renderTasksInColumn(doneTasks, doneList);
+    // RENDERING TASK IN EACH COLUMN
+    renderTasksInColumn(todoTasks, todoList);
+    renderTasksInColumn(progressTasks, progressList);
+    renderTasksInColumn(doneTasks, doneList);
             
-        // SHOW EMPTY STATES IF THERE IS NO TASKS
-        if (todoTasks.length === 0) showEmptyState(todoList, 'No tasks yet. Add your first task!');
-        if (progressTasks.length === 0) showEmptyState(progressList, 'No tasks in progress');
-        if (doneTasks.length === 0) showEmptyState(doneList, 'No completed tasks');
+    // SHOW EMPTY STATES IF THERE IS NO TASKS
+    if (todoTasks.length === 0) showEmptyState(todoList, 'No tasks yet. Add your first task!');
+    if (progressTasks.length === 0) showEmptyState(progressList, 'No tasks in progress');
+    if (doneTasks.length === 0) showEmptyState(doneList, 'No completed tasks');
 }
 
 // Render tasks in specific column
@@ -269,12 +288,12 @@ function renderTasks() {
             document.getElementById('doneTasks').textContent = done;
         }
 
-// Save tasks to localStorage
+// SAVE TASKS TO LOCALSTORAGE
 function saveTasks() {
     localStorage.setItem('tasks', JSON.stringify(tasks));
 }
 
-// Load tasks from localStorage
+// LOAD TASKS FROM LOCALSTORAGE
 function loadTasks() {
     const savedTasks = localStorage.getItem('tasks');
     if (savedTasks) {
@@ -289,7 +308,7 @@ function loadTasks() {
     }
 }
 
-// Promote task to next status
+// PROMOTE TASK TO NEXT STATUS
 function promoteTask(taskId) {
     const task = tasks.find(t => t.id === parseFloat(taskId));
     if (task) {
@@ -305,7 +324,7 @@ function promoteTask(taskId) {
     }
 }
 
-// Format date
+// FORMAT DATE
 function formatDate(date) {
     const d = new Date(date);
     const now = new Date();
@@ -319,12 +338,12 @@ function formatDate(date) {
     return d.toLocaleDateString();
 }
 
-// Check if task is overdue
+// CHECK IF TASK IS OVERDUE
 function isOverdue(task) {
     return task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'done';
 }
 
-// Demote task to previous status
+// DEMOTE TASK TO PREVIOUS STATUS
 function demoteTask(taskId) {
     const task = tasks.find(t => t.id === parseFloat(taskId));
     if (task) {
@@ -340,7 +359,7 @@ function demoteTask(taskId) {
     }
 }
 
-// Confirm delete
+// CONFIRM DELETE
 function confirmDelete() {
     const task = tasks.find(t => t.id === deletingTaskId);
     if (task) {
@@ -352,7 +371,7 @@ function confirmDelete() {
     closeDeleteModal();
 }
 
-// Close delete modal
+// CLOSE DELETE MODAL
 function closeDeleteModal() {
     document.getElementById('deleteModal').style.display = 'none';
     deletingTaskId = null;
